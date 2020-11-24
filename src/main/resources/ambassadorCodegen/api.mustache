@@ -1,0 +1,20 @@
+# operations block
+{{#operations}}
+
+# loop over each operation in the API:
+{{#operation}}
+---
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name: {{operationId}}
+spec:
+  prefix: "{{contextPath}}{{path}}"
+  prefix_regex: true
+  method: {{httpMethod}}
+  service: {{vendorExtensions.x-ambassador.service}}
+
+{{/operation}}
+
+# end of operations block
+{{/operations}}
