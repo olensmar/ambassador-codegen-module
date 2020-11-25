@@ -123,9 +123,9 @@
                                     <inputSpec>src/test/resources/petstore-v3.yaml</inputSpec>
                                     <!-- language file, like e.g. JavaJaxRSCodegen shipped with swagger -->
                                     <language>io.datawire.codegen.AmbassadorGenerator</language>
-                                    <output>${project.build.directory}/generated-test-sources</output>
+                                    <output>${project.build.directory}/ambassador</output>
                                     <configOptions>
-                                        <targetService>anotherService</targetService>
+                                        <targetService>petstore</targetService>
                                     </configOptions>
                                 </configuration>
                             </execution>

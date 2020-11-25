@@ -23,6 +23,8 @@ externalDocs:
   url: http://swagger.io
 servers:
   - url: "/api/v3"
+x-ambassador:
+  service: my-target-service
 tags:
   - name: pet
     description: Everything about your Pets
@@ -44,6 +46,8 @@ paths:
       summary: Update an existing pet
       description: Update an existing pet by Id
       operationId: updatePet
+      x-ambassador:
+        service: another-target-service
       requestBody:
         description: Update an existent pet in the store
         content:
@@ -220,7 +224,7 @@ paths:
         '404':
           description: Pet not found
       security:
-        - api_key: []
+        - api_key: [ ]
         - petstore_auth:
             - write:pets
             - read:pets
@@ -338,7 +342,7 @@ paths:
                   type: integer
                   format: int32
       security:
-        - api_key: []
+        - api_key: [ ]
   "/store/order":
     post:
       tags:
@@ -521,7 +525,7 @@ paths:
       summary: Logs out current logged in user session
       description: ''
       operationId: logoutUser
-      parameters: []
+      parameters: [ ]
       responses:
         default:
           description: successful operation

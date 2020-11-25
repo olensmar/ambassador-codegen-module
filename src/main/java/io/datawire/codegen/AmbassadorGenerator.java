@@ -6,6 +6,8 @@ import io.swagger.codegen.v3.CodegenType;
 import io.swagger.codegen.v3.generators.DefaultCodegenConfig;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.servers.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,56 +16,33 @@ import java.util.List;
 import java.util.Map;
 
 public class AmbassadorGenerator extends DefaultCodegenConfig {
+    private static Logger LOGGER = LoggerFactory.getLogger(AmbassadorGenerator.class);
 
-    // source folder where to write the files
-    protected String sourceFolder = "src";
-    protected String apiVersion = "1.0.0";
     private String basePath = "";
     private String targetService;
     private boolean overrideExtensions;
+    private String targetNamespace = "ambassador";
 
-    /**
-     * Configures the type of generator.
-     *
-     * @return the CodegenType for this generator
-     * @see io.swagger.codegen.CodegenType
-     */
     public CodegenType getTag() {
         return CodegenType.CONFIG;
     }
 
-    /**
-     * Configures a friendly name for the generator.  This will be used by the generator
-     * to select the library with the -l flag.
-     *
-     * @return the friendly name for the generator
-     */
     public String getName() {
         return "ambassadorGenerator";
     }
 
-    /**
-     * Returns human-friendly help for the generator.  Provide the consumer with help
-     * tips, parameters here
-     *
-     * @return A string value for the help message
-     */
     public String getHelp() {
-        return "Generates an Ambassador configuration file.";
+        return "Generates an Ambassador mapping file.";
     }
 
     public AmbassadorGenerator() {
         super();
 
-        // set the output folder here
-        outputFolder = "target/generated/ambassador";
-        this.cliOptions.add(CliOption.newString("targetService", "The name of the service to map requests to"));
+        this.cliOptions.add(CliOption.newString("targetService", "The name of the target service"));
+        this.cliOptions.add(CliOption.newString("targetNamespace", "The namespace of the target service"));
         this.cliOptions.add(CliOption.newBoolean("overrideExtensions", "If a specified targetService should override service extensions"));
 
-        apiTemplateFiles.put(
-                "api.mustache",   // the template to use
-                "-mapping.yaml");       // the extension for each file to write
-
+        apiTemplateFiles.put("api.mustache", "-mapping.yaml");
         templateDir = "ambassadorCodegen";
     }
 
@@ -73,6 +52,14 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
         if (this.additionalProperties.containsKey("targetService")) {
             targetService = this.additionalProperties.get("targetService").toString();
+        } else {
+            LOGGER.warn("Missing targetService argument - make sure the corresponding x-ambassador.service vendor extension is in your OAS definition");
+        }
+
+        if (this.additionalProperties.containsKey("targetNamespace")) {
+            targetNamespace = this.additionalProperties.get("targetNamespace").toString();
+        } else {
+            LOGGER.warn("Missing targetNamespace argument - make sure the corresponding x-ambassador.namespace vendor extension is in your OAS definition");
         }
 
         if (this.additionalProperties.containsKey("overrideExtensions")) {
@@ -80,18 +67,9 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
         }
     }
 
-    /**
-     * Location to write api files.  You can use the apiPackage() as defined when the class is
-     * instantiated
-     */
     @Override
     public String apiFileFolder() {
         return outputFolder;
-    }
-
-    @Override
-    public String getArgumentsLocation() {
-        return null;
     }
 
     @Override
@@ -114,7 +92,12 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
             Map<String, Object> extensions = openAPI.getExtensions();
             if (extensions != null && extensions.containsKey("x-ambassador")) {
                 Map<Object, String> values = (Map<Object, String>) extensions.get("x-ambassador");
-                targetService = values.get("service");
+                if (values.containsKey("service")) {
+                    targetService = values.get("service");
+                }
+                if (values.containsKey("namespace")) {
+                    targetNamespace = values.get("namespace");
+                }
             }
         }
     }
@@ -140,10 +123,14 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
         List<CodegenOperation> operations = (List<CodegenOperation>) ((HashMap) objs.get("operations")).get("operation");
 
-        // rewrite path parameters to regex expression
         for (CodegenOperation operation : operations) {
-            operation.path = basePath + operation.path.replaceAll("\\{.*}", "\\\\{.*}");
+            // rewrite path parameters to regex expression - this probably needs to be improved
+            operation.path = basePath + operation.path.replaceAll("\\{.*}", "\\{.*}");
 
+            // make operationId lowercase - required by ambassador where it is used as name in metadata
+            operation.operationId = operation.operationId.toLowerCase();
+
+            // add vendor extensions used in template
             if (targetService != null) {
 
                 Map<String, Object> extensions = operation.vendorExtensions;
@@ -161,6 +148,9 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
                 if (overrideExtensions || !values.containsKey("service")) {
                     values.put("service", targetService);
+                }
+                if (overrideExtensions || !values.containsKey("namespace")) {
+                    values.put("namespace", targetNamespace);
                 }
             }
         }
