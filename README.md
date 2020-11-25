@@ -29,12 +29,12 @@ your spec.
 
 The command-line arguments are
 
-- targetService: specifies the target service to use in the generated mapping file - required
-- targetNamespace: specifies the target namespace to use in the generated mapping file, default is "ambassador"
-- overrideExtensions: boolean that controls if command-line arguments should override any extensions in the source OAS
+- `targetService`: specifies the target service to use in the generated mapping file - required
+- `targetNamespace`: specifies the target namespace to use in the generated mapping file, default is "ambassador"
+- `overrideExtensions`: boolean that controls if command-line arguments should override any extensions in the source OAS
   definition, default is false
 
-The corresponding OAS extensions are specified under a "x-ambassador" node at either the top or operation level in your
+The corresponding OAS extensions are specified under an `x-ambassador` node at either the top or operation level in your
 OAS definition:
 
 ```
@@ -46,12 +46,12 @@ x-ambassador:
 ## Sample Using with Ambassador
 
 Here comes a quick walkthrough showing howing this all works with Ambassador - using
-the [sample petstore service](https://github.com/swagger-api/swagger-petstore).
+the [Sample Petstore Service](https://github.com/swagger-api/swagger-petstore).
 
 You'll need to have Ambassador running in a local cluster/namespace as created by the
 Ambassador [Getting Started](https://www.getambassador.io/docs/latest/tutorials/getting-started/) guide.
 
-Start by deploying petstore using the provided deployment file
+Start by deploying petstore to your local cluster using the provided kubernetes deployment file
 
 ```
 kubectl apply -f petstore-deployment.yaml 
@@ -65,18 +65,17 @@ NAME                                   READY   STATUS    RESTARTS   AGE
 ambassador-97dd6c4cb-v2vsx             1/1     Running   89         54d
 ambassador-injector-7d7bdcf58b-phlsx   1/1     Running   1          54d
 ambassador-redis-6594476754-wv569      1/1     Running   1          54d
-inventory-6cb9bf6465-vg877             1/1     Running   1          53d
 petstore-6b6bf5f798-xqxf4              1/1     Running   0          13s
 telepresence-proxy-7d4f567fb9-s8slz    1/1     Running   5          54d
 ```
 
-Now run the provided test profile to generate Ambassador mapping files from the Petstore V3 OAS definition;
+Now run the provided maven generate profile to generate Ambassador mapping files from the Petstore V3 OAS definition;
 
 ```
 mvn test -P test
 ```
 
-The mappings are all generated into the target/ambassador folder - apply the PetApi mappting using
+The mappings are all generated into the target/ambassador folder - apply the PetApi mapping using
 
 ```
 kubectl apply -f target/ambassador/PetApi-mapping.yaml 
@@ -93,5 +92,3 @@ Petstore is now mapped using the Ambassador API Gateway - curl away!
 > curl http://localhost:8080/api/v3/pet/2
 {"id":2,"category":{"id":2,"name":"Cats"},"name":"Cat 2","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag2"},{"id":2,"name":"tag3"}],"status":"available"}
 ```
-
-If you want to access the UI of the deployed Petstore you'll need to map that with Ambassador also
