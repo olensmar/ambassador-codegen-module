@@ -66,6 +66,10 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
         if (this.additionalProperties.containsKey("servicePrefix")) {
             servicePrefix = this.additionalProperties.get("servicePrefix").toString();
+
+            // switch to template with prefixs - to avoid unnecessary regex operations
+            apiTemplateFiles.remove("api.mustache");
+            apiTemplateFiles.put( "api-with-prefix.mustache", "-mapping.yaml");
         }
 
         if (this.additionalProperties.containsKey("overrideExtensions")) {
@@ -160,6 +164,9 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
                 if (overrideExtensions || !values.containsKey("service")) {
                     values.put("service", targetService);
                 }
+
+                values.put("servicename", createServiceName( values.get("service")));
+
                 if (overrideExtensions || !values.containsKey("namespace")) {
                     values.put("namespace", targetNamespace);
                 }
@@ -171,5 +178,26 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
         }
 
         return super.postProcessOperations(objs);
+    }
+
+    private String createServiceName(String service) {
+        if( service == null ){
+            return "";
+        }
+
+        int ix = service.indexOf("://");
+        if( ix >= 0 ){
+            service = service.substring(ix + 3);
+        }
+
+        if( (ix = service.lastIndexOf(':')) > 0 ){
+            service = service.substring(0, ix);
+        }
+
+        if( (ix = service.lastIndexOf('.')) > 0 ){
+            service = service.substring(0, ix);
+        }
+
+        return service;
     }
 }

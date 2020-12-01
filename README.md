@@ -95,3 +95,43 @@ Petstore is now mapped using the Ambassador API Gateway - curl away!
 > curl http://localhost:8080/api/v3/pet/2
 {"id":2,"category":{"id":2,"name":"Cats"},"name":"Cat 2","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag2"},{"id":2,"name":"tag3"}],"status":"available"}
 ```
+
+## Mapping Generation
+
+The generated mapping is prohibitive in the sense that it only maps the exact matching path (including path parameters),
+which requires the use of the regex functionality in Ambassador. For example, the generated mapping for the getPetById operation
+above generates:
+
+```
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name: petstore-getpetbyid
+  namespace: ambassador
+spec:
+  prefix: "/api/v3/pet/{.*}"
+  prefix_regex: true
+  method: GET
+  service: petstore
+```
+
+If a servicePrefix is specified this is removed from the url using a regex rewrite - for example if we add "targetService=petstore"
+to the configuration for the above generation we would get the following mapping:
+
+```
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name: petstore-getpetbyid
+  namespace: ambassador
+spec:
+  prefix: "/petstore/api/v3/pet/{.*}"
+  prefix_regex: true
+  method: GET
+  service: petstore
+  regex_rewrite:
+    pattern: '/petstore(.*)'
+    substitution: '\1'
+```
+
+which effectively removes the prefix when forwarding the request to the service.

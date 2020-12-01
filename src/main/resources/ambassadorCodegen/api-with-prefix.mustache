@@ -8,10 +8,13 @@ metadata:
   name: {{vendorExtensions.x-ambassador.servicename}}-{{operationId}}
   namespace: {{vendorExtensions.x-ambassador.namespace}}
 spec:
-  prefix: "{{contextPath}}{{path}}"
+  prefix: "{{servicePrefix}}{{contextPath}}{{path}}"
   prefix_regex: true
   method: {{httpMethod}}
   service: {{vendorExtensions.x-ambassador.service}}
+  regex_rewrite:
+    pattern: '{{servicePrefix}}(.*)'
+    substitution: '\1'
 
 {{/operation}}
 {{/operations}}
