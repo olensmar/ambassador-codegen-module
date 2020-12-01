@@ -20,11 +20,12 @@ java -cp <path to swagger-codegen-cli>:target/ambassador-swagger-codegen-1.0.0.j
    -l ambassadorGenerator \
    -i <path/url to OAS definition> \
    -o <output folder>
+   -additional-properties targetNamespace=mynamespace,targetService=myservice,servicePrefix=/myservice
 ```
 
 ## Configuration
 
-The codegen template has two configuration options that can be provided either by command-line or via OAS extensions in
+The codegen template has several configuration options that can be provided either by command-line or via OAS extensions in
 your spec.
 
 The command-line arguments are
@@ -33,6 +34,7 @@ The command-line arguments are
 - `targetNamespace`: specifies the target namespace to use in the generated mapping file, default is "ambassador"
 - `overrideExtensions`: boolean that controls if command-line arguments should override any extensions in the source OAS
   definition, default is false
+- `servicePrefix`: specified an additional prefix to prepend all prefixes, for example "/myservice"  
 
 The corresponding OAS extensions are specified under an `x-ambassador` node at either the top or operation level in your
 OAS definition:
@@ -41,6 +43,7 @@ OAS definition:
 x-ambassador:
   service: myservice
   namespace: mynamespace
+  prefix: /myservice
 ```
 
 ## Sample Using with Ambassador

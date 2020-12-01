@@ -22,6 +22,7 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
     private String targetService;
     private boolean overrideExtensions;
     private String targetNamespace = "ambassador";
+    private String servicePrefix = "";
 
     public CodegenType getTag() {
         return CodegenType.CONFIG;
@@ -40,6 +41,7 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
         this.cliOptions.add(CliOption.newString("targetService", "The name of the target service"));
         this.cliOptions.add(CliOption.newString("targetNamespace", "The namespace of the target service"));
+        this.cliOptions.add(CliOption.newString("servicePrefix", "An additional prefix to add to all mappings"));
         this.cliOptions.add(CliOption.newBoolean("overrideExtensions", "If a specified targetService should override service extensions"));
 
         apiTemplateFiles.put("api.mustache", "-mapping.yaml");
@@ -60,6 +62,10 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
             targetNamespace = this.additionalProperties.get("targetNamespace").toString();
         } else {
             LOGGER.warn("Missing targetNamespace argument - make sure the corresponding x-ambassador.namespace vendor extension is in your OAS definition");
+        }
+
+        if (this.additionalProperties.containsKey("servicePrefix")) {
+            servicePrefix = this.additionalProperties.get("servicePrefix").toString();
         }
 
         if (this.additionalProperties.containsKey("overrideExtensions")) {
@@ -98,6 +104,9 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
                 if (values.containsKey("namespace")) {
                     targetNamespace = values.get("namespace");
                 }
+                if (values.containsKey("prefix")) {
+                    servicePrefix = values.get("prefix");
+                }
             }
         }
     }
@@ -109,11 +118,13 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
             if (server.getUrl().startsWith("/")) {
                 basePath = server.getUrl();
             }
-            try {
-                URL url = new URL(server.getUrl());
-                basePath = url.getPath();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+            else {
+                try {
+                    URL url = new URL(server.getUrl());
+                    basePath = url.getPath();
+                } catch (MalformedURLException e) {
+                    LOGGER.debug("Failed to extract path from server " + server.getUrl());
+                }
             }
         }
     }
@@ -151,6 +162,10 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
                 }
                 if (overrideExtensions || !values.containsKey("namespace")) {
                     values.put("namespace", targetNamespace);
+                }
+
+                if( overrideExtensions || !values.containsKey("servicePrefix")) {
+                    values.put("servicePrefix", servicePrefix);
                 }
             }
         }
