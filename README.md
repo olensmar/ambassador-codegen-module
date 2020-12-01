@@ -98,9 +98,8 @@ Petstore is now mapped using the Ambassador API Gateway - curl away!
 
 ## Mapping Generation
 
-The generated mapping is prohibitive in the sense that it only maps the exact matching path (including path parameters),
-which requires the use of the regex functionality in Ambassador. For example, the generated mapping for the getPetById operation
-above generates:
+The generated mapping is prohibitive in the sense that it only maps the exact matching method and path (including path parameters),
+for each operation. For example, the generated mapping for the getPetById operation above results in:
 
 ```
 apiVersion: getambassador.io/v2
