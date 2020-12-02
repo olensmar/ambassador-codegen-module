@@ -34,7 +34,8 @@ The command-line arguments are
 - `targetNamespace`: specifies the target namespace to use in the generated mapping file, default is "ambassador"
 - `overrideExtensions`: boolean that controls if command-line arguments should override any extensions in the source OAS
   definition, default is false
-- `servicePrefix`: specified an additional prefix to prepend all prefixes, for example "/myservice"  
+- `servicePrefix`: specified an additional prefix to prepend all paths, for example "/myservice". This will be removed 
+  when forwarding to the target service (see example below)
 
 The corresponding OAS extensions are specified under an `x-ambassador` node at either the top or operation level in your
 OAS definition:
