@@ -98,7 +98,7 @@ Petstore is now mapped using the Ambassador API Gateway - curl away!
 
 ## Mapping Generation
 
-The generated mapping is prohibitive in the sense that it only maps the exact matching method and path (including path parameters),
+The generated mapping is prohibitive in the sense that it only maps the exact matching method and path (including path parameters)
 for each operation. For example, the generated mapping for the getPetById operation above results in:
 
 ```
@@ -114,7 +114,7 @@ spec:
   service: petstore
 ```
 
-If a servicePrefix is specified this is removed from the url using a regex rewrite - for example if we add "targetService=petstore"
+If a servicePrefix is specified this is removed from the url using a regex rewrite - for example if we add "servicePrefix=petstore"
 to the configuration for the above generation we would get the following mapping:
 
 ```
