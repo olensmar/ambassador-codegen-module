@@ -114,8 +114,8 @@ spec:
   service: petstore
 ```
 
-If a servicePrefix is specified this is removed from the url using a regex rewrite - for example if we add "servicePrefix=petstore"
-to the configuration for the above generation we would get the following mapping:
+If a servicePrefix is specified this is removed from the url using a regex rewrite - for example if we add 
+"servicePrefix=/petstore" to the configuration for the above generation we would get the following mapping:
 
 ```
 apiVersion: getambassador.io/v2
