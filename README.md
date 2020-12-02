@@ -135,3 +135,18 @@ spec:
 ```
 
 which effectively removes the prefix when forwarding the request to the service.
+
+## Using with Swagger Generator
+
+You can add the created target jar file to the standalone Swagger Generator as described at 
+https://github.com/swagger-api/swagger-codegen/tree/3.0.0#swagger-generator--docker-image
+
+An example invocation of the running generator with curl:
+
+```
+curl -X POST "<generator host>/api/generate" \ 
+    -H "accept: application/octet-stream" -H \
+    "Content-Type: application/json" -d \
+    "{\"lang\":\"ambassadorGenerator\",\"specURL\":\"https://petstore3.swagger.io/api/v3/openapi.json\",\
+      \"type\":\"CONFIG\",\"codegenVersion\":\"V3\",\"options\":{ \"additionalProperties\":{\"targetService\":\"petstore\"}}}"
+```
