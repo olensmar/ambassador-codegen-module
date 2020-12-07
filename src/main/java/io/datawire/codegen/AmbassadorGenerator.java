@@ -1,5 +1,6 @@
 package io.datawire.codegen;
 
+import com.google.common.collect.Sets;
 import io.swagger.codegen.v3.CliOption;
 import io.swagger.codegen.v3.CodegenOperation;
 import io.swagger.codegen.v3.CodegenType;
@@ -14,6 +15,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AmbassadorGenerator extends DefaultCodegenConfig {
     private static Logger LOGGER = LoggerFactory.getLogger(AmbassadorGenerator.class);
@@ -23,6 +25,7 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
     private boolean overrideExtensions;
     private String targetNamespace = "ambassador";
     private String servicePrefix = "";
+    private Set<String> ignoreOperations;
 
     public CodegenType getTag() {
         return CodegenType.CONFIG;
@@ -42,6 +45,7 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
         this.cliOptions.add(CliOption.newString("targetService", "The name of the target service"));
         this.cliOptions.add(CliOption.newString("targetNamespace", "The namespace of the target service"));
         this.cliOptions.add(CliOption.newString("servicePrefix", "An additional prefix to add to all mappings"));
+        this.cliOptions.add(CliOption.newString("ignoreOperations", "A comma-separated list of operationIds to ignore"));
         this.cliOptions.add(CliOption.newBoolean("overrideExtensions", "If a specified targetService should override service extensions"));
 
         apiTemplateFiles.put("api.mustache", "-mapping.yaml");
@@ -72,6 +76,12 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
             apiTemplateFiles.put( "api-with-prefix.mustache", "-mapping.yaml");
         }
 
+        if (this.additionalProperties.containsKey("ignoreOperations")) {
+            ignoreOperations = Sets.newHashSet(this.additionalProperties.get("ignoreOperations").toString().split(","));
+        } else {
+            ignoreOperations = Sets.newHashSet();
+        }
+
         if (this.additionalProperties.containsKey("overrideExtensions")) {
             overrideExtensions = Boolean.valueOf(this.additionalProperties.get("overrideExtensions").toString());
         }
@@ -90,6 +100,18 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
     @Override
     public String getDefaultTemplateDir() {
         return templateDir;
+    }
+
+    @Override
+    public String escapeUnsafeCharacters(String input) {
+        // no escaping needed!?
+        return input;
+    }
+
+    @Override
+    public String escapeQuotationMark(String input) {
+        // no escaping needed!?
+        return input;
     }
 
     @Override
@@ -138,7 +160,14 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
         List<CodegenOperation> operations = (List<CodegenOperation>) ((HashMap) objs.get("operations")).get("operation");
 
-        for (CodegenOperation operation : operations) {
+        // loop array so we can modify the original collection
+        for (CodegenOperation operation : operations.toArray( new CodegenOperation[operations.size()])) {
+            if( ignoreOperations.contains( operation.operationId)){
+                LOGGER.debug("Ignoring operation " + operation.operationId);
+                operations.remove(operation);
+                continue;
+            }
+
             // rewrite path parameters to regex expression - this probably needs to be improved
             operation.path = basePath + operation.path.replaceAll("\\{.*}", "\\{.*}");
 
@@ -147,7 +176,6 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
 
             // add vendor extensions used in template
             if (targetService != null) {
-
                 Map<String, Object> extensions = operation.vendorExtensions;
                 if (extensions == null) {
                     extensions = new HashMap<>();
@@ -160,6 +188,11 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
                     values = new HashMap<>();
                     extensions.put("x-ambassador", values);
                 }
+                else if( Boolean.TRUE.equals(values.get("ignore"))){
+                    LOGGER.debug("Ignoring operation " + operation.operationId);
+                    operations.remove( operation );
+                    continue;
+                }
 
                 if (overrideExtensions || !values.containsKey("service")) {
                     values.put("service", targetService);
@@ -171,8 +204,8 @@ public class AmbassadorGenerator extends DefaultCodegenConfig {
                     values.put("namespace", targetNamespace);
                 }
 
-                if( overrideExtensions || !values.containsKey("servicePrefix")) {
-                    values.put("servicePrefix", servicePrefix);
+                if( overrideExtensions || !values.containsKey("prefix")) {
+                    values.put("prefix", servicePrefix);
                 }
             }
         }

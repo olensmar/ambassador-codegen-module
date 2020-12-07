@@ -47,7 +47,7 @@ paths:
       description: Update an existing pet by Id
       operationId: updatePet
       x-ambassador:
-        service: another-target-service
+        ignore: true
       requestBody:
         description: Update an existent pet in the store
         content:
@@ -87,6 +87,9 @@ paths:
       summary: Add a new pet to the store
       description: Add a new pet to the store
       operationId: addPet
+      x-ambassador:
+        service: another-petstore
+        prefix: /another-petstore
       requestBody:
         description: Create a new pet in the store
         content:

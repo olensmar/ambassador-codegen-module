@@ -20,7 +20,7 @@ java -cp <path to swagger-codegen-cli>:target/ambassador-swagger-codegen-1.0.0.j
    -l ambassadorGenerator \
    -i <path/url to OAS definition> \
    -o <output folder>
-   -additional-properties targetNamespace=mynamespace,targetService=myservice,servicePrefix=/myservice
+   --additional-properties targetNamespace=mynamespace,targetService=myservice,servicePrefix=/myservice
 ```
 
 ## Configuration
@@ -36,6 +36,8 @@ The command-line arguments are
   definition, default is false
 - `servicePrefix`: specified an additional prefix to prepend all paths, for example "/myservice". This will be removed 
   when forwarding to the target service (see example below)
+- `ignoreOperations`: a comma-separated list of operationIds to exclude from the generated mapping file  
+
 
 The corresponding OAS extensions are specified under an `x-ambassador` node at either the top or operation level in your
 OAS definition:
@@ -46,6 +48,15 @@ x-ambassador:
   namespace: mynamespace
   prefix: /myservice
 ```
+
+If you want to exclude a specific operation via extensions you can simply add
+
+```
+x-ambassador:
+  ignore: true
+```
+
+to that operation.
 
 ## Sample Using with Ambassador
 
