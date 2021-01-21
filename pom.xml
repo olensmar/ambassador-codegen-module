@@ -120,8 +120,8 @@
                                     <goal>generate</goal>
                                 </goals>
                                 <configuration>
-                                    <!--<inputSpec>https://petstore3.swagger.io/api/v3/openapi.json</inputSpec>-->
-                                    <inputSpec>src/test/resources/petstore-v3-with-extensions.yaml</inputSpec>
+                                    <inputSpec>https://petstore3.swagger.io/api/v3/openapi.json</inputSpec>
+                                    <!--<inputSpec>src/test/resources/petstore-v3.yaml</inputSpec>-->
                                     <language>io.datawire.codegen.AmbassadorGenerator</language>
                                     <output>${project.build.directory}/ambassador</output>
                                     <configOptions>

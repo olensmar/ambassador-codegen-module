@@ -66,7 +66,7 @@ the [Sample Petstore Service](https://github.com/swagger-api/swagger-petstore).
 You'll need to have Ambassador running in a local cluster/namespace as created by the
 Ambassador [Getting Started](https://www.getambassador.io/docs/latest/tutorials/getting-started/) guide.
 
-Start by deploying petstore to your local cluster using the provided kubernetes deployment file
+Start by deploying petstore to your local cluster using the provided [petstore deployment](petstore-deployment.yaml) file
 
 ```
 kubectl apply -f petstore-deployment.yaml 
@@ -84,7 +84,7 @@ petstore-6b6bf5f798-xqxf4              1/1     Running   0          13s
 telepresence-proxy-7d4f567fb9-s8slz    1/1     Running   5          54d
 ```
 
-Now run the provided maven generate profile to generate Ambassador mapping files from the Petstore V3 OAS definition;
+Now run the provided maven generate profile to generate Ambassador mapping files from the public Petstore V3 OAS definition;
 
 ```
 mvn test -P test
@@ -96,17 +96,19 @@ The mappings are all generated into the target/ambassador folder - apply the Pet
 kubectl apply -f target/ambassador/PetApi-mapping.yaml 
 ```
 
-Petstore is now mapped using the Ambassador API Gateway - curl away!
+Petstore is now mapped under /petstore using the Ambassador API Gateway - curl away!
 
 ```
-> curl http://localhost:8080/api/v3/pet/findByStatus?status=available
+> curl -k https://localhost/petstore/api/v3/pet/findByStatus?status=available
 [{"id":1,"category":{"id":2,"name":"Cats"},"name":"Cat 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag2"}],"status":"available"},{"id":2,"category":{"id":2,"name":"Cats"},"name":"Cat 2","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag2"},{"id":2,"name":"tag3"}],"status":"available"},{"id":4,"category":{"id":1,"name":"Dogs"},"name":"Dog 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag2"}],"status":"available"},{"id":7,"category":{"id":4,"name":"Lions"},"name":"Lion 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag2"}],"status":"available"},{"id":8,"category":{"id":4,"name":"Lions"},"name":"Lion 2","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag2"},{"id":2,"name":"tag3"}],"status":"available"},{"id":9,"category":{"id":4,"name":"Lions"},"name":"Lion 3","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag3"},{"id":2,"name":"tag4"}],"status":"available"},{"id":10,"category":{"id":3,"name":"Rabbits"},"name":"Rabbit 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag3"},{"id":2,"name":"tag4"}],"status":"available"}]
 ```
 
 ```
-> curl http://localhost:8080/api/v3/pet/2
+> curl -k https://localhost/petstore/api/v3/pet/2
 {"id":2,"category":{"id":2,"name":"Cats"},"name":"Cat 2","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag2"},{"id":2,"name":"tag3"}],"status":"available"}
 ```
+
+(The "-k" option is added to allow the default self-signed certificate used by Ambassador)
 
 ## Mapping Generation
 
